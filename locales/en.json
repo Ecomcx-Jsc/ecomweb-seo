@@ -65,7 +65,7 @@
  "analysis.no_data_yet": "No data yet.",
  "analysis.no_default_share_image_posts": "No default share image — posts without a featured image will show blank on Facebook/Zalo",
  "analysis.no_duplicate_titles": "No duplicate titles",
- "analysis.no_favicon_declared": "No favicon declared",
+ "analysis.no_favicon_declared": "No favicon declared — set it in Settings › General › Site icon (core ≥ 1.16) or in theme.json › icon",
  "analysis.no_h1_tag": "No H1 tag",
  "analysis.no_h2_tags_content_should": "No H2 tags — content should be split into sections",
  "analysis.no_json_ld_schema": "No JSON-LD schema",

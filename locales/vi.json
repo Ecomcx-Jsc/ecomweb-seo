@@ -65,7 +65,7 @@
  "analysis.no_data_yet": "Chưa có dữ liệu.",
  "analysis.no_default_share_image_posts": "Chưa có ảnh chia sẻ mặc định — bài không có ảnh đại diện sẽ hiện trống trên Facebook/Zalo",
  "analysis.no_duplicate_titles": "Không có tiêu đề trùng",
- "analysis.no_favicon_declared": "Không khai báo favicon",
+ "analysis.no_favicon_declared": "Không khai báo favicon — đặt ở Cài đặt › Chung › Biểu tượng website (core ≥ 1.16) hoặc trong theme.json › icon",
  "analysis.no_h1_tag": "Không có thẻ H1",
  "analysis.no_h2_tags_content_should": "Không có thẻ H2 — nội dung nên chia mục",
  "analysis.no_json_ld_schema": "Không có JSON-LD schema",
