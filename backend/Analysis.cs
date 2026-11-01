@@ -284,7 +284,8 @@ public static partial class Analysis
         var compressed = page.Headers.TryGetValue("content-encoding", out var enc) && enc.Length > 0;
         items.Add(new("compression", "page", Text.T("ecomcx-seo:analysis.compression"), compressed ? "pass" : "warning", compressed ? Text.T("ecomcx-seo:analysis.compressed_with") : Text.T("ecomcx-seo:analysis.the_server_doesn_t_compress"), null, [enc ?? ""]));
         var links = Anchors().Matches(html).Select(m => m.Groups[1].Value).Where(h => !h.StartsWith('#') && !h.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase)).ToList();
-        var external = links.Count(h => Uri.TryCreate(h, UriKind.Absolute, out var u) && u.Host != url.Host);
+        // "/trang" trên Linux/macOS là URI tuyệt đối file:///trang (host rỗng) → chỉ tính http(s) khác host là liên kết ngoài
+        var external = links.Count(h => Uri.TryCreate(h, UriKind.Absolute, out var u) && (u.Scheme == Uri.UriSchemeHttp || u.Scheme == Uri.UriSchemeHttps) && u.Host != url.Host);
         items.Add(new("links", "page", Text.T("ecomcx-seo:analysis.links"), links.Count > 0 ? "pass" : "warning", Text.T("ecomcx-seo:analysis.internal_links_external_links"), null, [(links.Count - external).ToString(), external.ToString()]));
         var text = Tags().Replace(Regex.Replace(html, @"<(script|style)[^>]*>.*?</\1>", " ", RegexOptions.IgnoreCase | RegexOptions.Singleline), " ");
         var words = Words().Matches(WebUtility.HtmlDecode(text)).Count;
