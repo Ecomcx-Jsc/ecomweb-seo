@@ -105,6 +105,17 @@ public static partial class Analysis
                     var urlCount = sitemap.Html is { } sx ? Regex.Matches(sx, "<loc>").Count : 0;
                     items.Add(new("sitemap", "basic", "Sitemap", sitemap.Error is null && urlCount > 0 ? "pass" : "fail",
                         sitemap.Error ?? (urlCount > 0 ? Text.T("ecomcx-seo:analysis.sitemap_xml_has_urls") : Text.T("ecomcx-seo:analysis.sitemap_xml_is_empty")), null, [urlCount.ToString()]));
+
+                    // Một trang nội dung thật (lấy từ sitemap): template bài / trang hay sinh lỗi mà trang chủ không có (2 thẻ H1, thiếu mô tả…)
+                    var sample = sitemap.Html is { } sxml ? Regex.Matches(sxml, "<loc>([^<]+)</loc>").Select(m => m.Groups[1].Value.Trim())
+                        .FirstOrDefault(u => Uri.TryCreate(u, UriKind.Absolute, out var x) && x.AbsolutePath.Trim('/').Length > 0 && !x.AbsolutePath.EndsWith(".xml")) : null;
+                    if (sample is not null && Uri.TryCreate(sample, UriKind.Absolute, out var sampleUri) && sampleUri.Host == home.Host)
+                    {
+                        var content = await FetchAsync(http, sampleUri, allowPrivate: true, ct);
+                        if (content.Error is null)
+                            items.AddRange(InspectHtml(content, sampleUri).Where(i => i.Id is "h1" or "h2" or "title" or "description" or "canonical" or "schema" or "img-alt")
+                                .Select(i => i with { Id = "sample-" + i.Id, Group = "sample", Title = $"{i.Title} · {sampleUri.AbsolutePath}" }));
+                    }
                 }
 
                 var scored = items.Where(i => i.Status != "info").ToList();

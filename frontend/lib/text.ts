@@ -42,6 +42,12 @@ export function extract(doc: ContentDoc | null | undefined): Extracted {
         break;
       }
       case "image": if (n.attrs?.src) out.images.push({ src: n.attrs.src, alt: n.attrs.alt ?? "", title: n.attrs.title ?? undefined }); return;
+      // Ảnh của khối chứa (ảnh bìa, ảnh + chữ) — vẫn đi tiếp vào nội dung bên trong
+      case "cover": case "mediaText": if (n.attrs?.src) out.images.push({ src: n.attrs.src, alt: n.attrs.alt ?? "" }); break;
+      // Mục lục của trình soạn v2
+      case "tableOfContents": out.hasToc = true; return;
+      // Nút: liên kết nằm ở thuộc tính, không phải mark
+      case "button": if (n.attrs?.href) out.links.push({ href: n.attrs.href, text: String(n.attrs.text ?? ""), rel: n.attrs.rel ?? undefined }); return;
       case "gallery": for (const im of n.attrs?.images ?? []) if (im?.src) out.images.push({ src: im.src, alt: im.alt ?? "" }); return;
       case "video": if (n.attrs?.src) out.videos.push({ src: n.attrs.src, title: n.attrs.name ?? undefined, poster: n.attrs.poster ?? undefined, kind: "file" }); return;
       case "youtube": if (n.attrs?.src) out.videos.push({ src: n.attrs.src, kind: "youtube" }); return;

@@ -9,7 +9,7 @@ interface AuditItem { id: string; group: string; title: string; status: Status; 
 interface Audit { score: number; at: string; items: AuditItem[] }
 interface Competitor { url: string; score: number; items: AuditItem[]; timeMs: number; size: number }
 
-const GROUPS: Record<string, string> = { basic: t("analysis.basics"), content: t("analysis.content"), config: t("analysis.seo_configuration"), homepage: t("analysis.home"), page: "Trang" };
+const GROUPS: Record<string, string> = { basic: t("analysis.basics"), content: t("analysis.content"), config: t("analysis.seo_configuration"), homepage: t("analysis.home"), sample: t("analysis.sample_page"), page: t("analysis.page") };
 const ORDER: Status[] = ["fail", "warning", "pass", "info"];
 
 function Results({ items }: { items: AuditItem[] }) {

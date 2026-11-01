@@ -4,12 +4,14 @@
   "version": "1.0.0",
   "description": "Kiểu dữ liệu + kiểm tra cho phần admin/frontend của plugin (CMS build bằng SDK của chính nó)",
   "scripts": {
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "test": "node scripts/test.mjs"
   },
   "devDependencies": {
     "@ecomcx/ecomweb-admin-sdk": "^1.26.0",
     "@ecomcx/ecomweb-theme-sdk": "^1.26.0",
     "@types/react": "^19",
+    "esbuild": "^0.25.10",
     "typescript": "5.9.3"
   }
 }

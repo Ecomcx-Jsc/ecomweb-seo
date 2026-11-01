@@ -3,3 +3,4 @@ obj/
 dist/
 node_modules/
 .DS_Store
+.test-build/

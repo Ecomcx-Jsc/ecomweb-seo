@@ -70,6 +70,17 @@ export function analyze(input: AnalysisInput): AnalysisResult {
   add("length", "basic", 8, total >= 600 ? "pass" : total >= 300 ? "warning" : "fail",
     total >= 600 ? "score.the_content_is_words_long" : "score.the_content_is_only_words", [total]);
 
+  // ------------------------------------------------------------ Cấu trúc tiêu đề
+  // Tiêu đề bài đã là H1 của trang → H1 trong nội dung làm trang có nhiều H1
+  const h1 = ex.headings.filter((h) => h.level === 1).length;
+  add("content-h1", "basic", 6, h1 === 0 ? "pass" : "fail", h1 === 0 ? "score.no_h1_inside_the_content" : "score.the_content_has_h1_headings", [h1]);
+  // Không nhảy cấp (H2 → H4): người đọc màn hình và Google hiểu sai cấu trúc
+  let skipped = 0;
+  for (let i = 1, prev = Math.max(2, ex.headings[0]?.level ?? 2); i < ex.headings.length; i++) { if (ex.headings[i].level > prev + 1) skipped++; prev = ex.headings[i].level; }
+  if (ex.headings.length) add("heading-order", "readability", 2, skipped === 0 ? "pass" : "warning", skipped === 0 ? "score.headings_follow_a_clear_order" : "score.headings_skip_levels", [skipped]);
+  const noAlt = ex.images.filter((i) => !i.alt.trim()).length;
+  if (ex.images.length) add("img-alt", "additional", 3, noAlt === 0 ? "pass" : "warning", noAlt === 0 ? "score.every_image_has_alt_text" : "score.images_have_no_alt_text", [noAlt, ex.images.length]);
+
   // ------------------------------------------------------------ Bổ sung
   if (kw) {
     const inHeadings = ex.headings.some((h) => h.level >= 2 && h.level <= 4 && includesFold(h.text, kw));
