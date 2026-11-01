@@ -45,3 +45,11 @@ test("điểm 0–100 và mọi mục có trọng số", () => {
   assert.ok(r.score >= 0 && r.score <= 100);
   assert.ok(r.checks.every((c) => c.weight > 0));
 });
+
+test("mọi thông điệp là khoá dịch (không có câu tiếng Việt thô → admin hiện “ecomcx-seo:…”)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const vi = JSON.parse(readFileSync("locales/vi.json", "utf8"));
+  const r = analyze({ keyword: "", title: "", description: "", slug: "", content: doc(h(1, "A"), h(3, "B"), { type: "image", attrs: { src: "/x.jpg" } }), siteUrl: "https://shop.vn" });
+  const r2 = run(doc(h(2, "Áo thun"), p("Áo thun cotton. ".repeat(50))), "áo thun");
+  for (const c of [...r.checks, ...r2.checks]) assert.ok(vi[c.message], `thiếu khoá dịch: ${c.message}`);
+});

@@ -612,6 +612,7 @@
  "score.long_posts_should_have_a": "Bài dài nên có mục lục — chèn [ecx_toc]",
  "score.move_the_keyword_closer_to": "Đưa từ khoá lên gần đầu tiêu đề",
  "score.neutral_title_add_emotional_words": "Tiêu đề trung tính — thêm từ gợi cảm xúc (tích cực hoặc cảnh báo) để tăng lượt nhấp",
+ "score.no_focus_keyword_set": "Chưa đặt từ khoá chính — nhập từ khoá bạn muốn bài xuất hiện trên Google",
  "score.no_h1_inside_the_content": "Nội dung không có thẻ H1 (tiêu đề bài là H1 duy nhất của trang)",
  "score.no_images_yet_add_an": "Chưa có ảnh nào — thêm ảnh có văn bản thay thế chứa từ khoá",
  "score.no_other_post_uses_this": "Từ khoá chưa được bài nào khác dùng",

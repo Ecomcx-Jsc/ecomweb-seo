@@ -612,6 +612,7 @@
  "score.long_posts_should_have_a": "Long posts should have a table of contents — insert [ecx_toc]",
  "score.move_the_keyword_closer_to": "Move the keyword closer to the beginning of the title",
  "score.neutral_title_add_emotional_words": "Neutral title — add emotional words (positive or cautionary) to increase clicks",
+ "score.no_focus_keyword_set": "No focus keyword yet — enter the keyword you want this post to rank for",
  "score.no_h1_inside_the_content": "No H1 inside the content (the post title is the page's only H1)",
  "score.no_images_yet_add_an": "No images yet — add an image whose alt text contains the keyword",
  "score.no_other_post_uses_this": "No other post uses this keyword",

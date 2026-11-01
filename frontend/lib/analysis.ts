@@ -53,7 +53,7 @@ export function analyze(input: AnalysisInput): AnalysisResult {
 
   // ------------------------------------------------------------ SEO cơ bản
   if (!kw) {
-    add("keyword", "basic", 10, "fail", "Chưa đặt từ khoá chính — nhập từ khoá bạn muốn bài xuất hiện trên Google");
+    add("keyword", "basic", 10, "fail", "score.no_focus_keyword_set");
   } else {
     add("kw-title", "basic", 8, includesFold(input.title, kw) ? "pass" : "fail",
       includesFold(input.title, kw) ? "score.the_seo_title_contains_the" : "score.the_seo_title_doesn_t");
