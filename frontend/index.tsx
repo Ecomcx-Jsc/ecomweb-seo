@@ -227,7 +227,7 @@ export default definePlugin({
     "robots.txt": robotsTxt,
     "post.blocks": (blocks, { site, post }) => transformBlocks(blocks, site, post?.title ?? ""),
     // BreadcrumbList đã nằm trong @graph của SchemaGraph → khối breadcrumbs của theme không in thêm một cái (SDK ≥ breadcrumbs.schema)
-    "breadcrumbs.schema": (schema: unknown, { site }: { site: Site }) => {
+    "breadcrumbs.schema": (schema: Record<string, unknown> | null, { site }: { site: Site }) => {
       const s = seoSettings(site);
       return s && s.modules?.schema !== false && s.modules?.breadcrumbs !== false ? null : schema;
     },
