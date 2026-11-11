@@ -95,12 +95,21 @@ export function SeoBox(props: MetaBoxProps) {
   const contentText = useMemo(() => extract(props.content as any).text, [props.content]);
   // AI của core (Cài đặt › AI): nút chỉ hiện khi AI đã bật; plugin khai quyền "ai" trong plugin.json, chủ site tắt / đặt hạn mức riêng được
   const ai = useAi();
-  const [aiBusy, setAiBusy] = useState<"title" | "description" | "keywords" | null>(null);
+  const [aiBusy, setAiBusy] = useState<"title" | "description" | "keywords" | "advice" | null>(null);
   async function aiKeywords() {
     setAiBusy("keywords");
     try {
       const text = await ai.ask("Suggest 3 to 5 SEO focus keywords for this page, in the page language. Return them on one line separated by commas, no numbering, no quotes. Put the single most important keyword first.", `${props.post.title ?? ""}\n\n${contentText}`.slice(0, 6000));
       update({ focusKeywords: [...new Set([...keywords, ...text.split(/[,\n]/).map((x) => x.trim().replace(/^[-*#\d.)\s]+/, "")).filter(Boolean)])].slice(0, 5) });
+    } catch (e) { notify.error((e as Error).message); } finally { setAiBusy(null); }
+  }
+  const [advice, setAdvice] = useState<string | null>(null);
+  async function aiAdvice() {
+    const bad = result.checks.filter((c) => c.status !== "pass").map((c) => t(c.message, Object.fromEntries((c.args ?? []).map((a, i) => [i, a]))));
+    if (!bad.length) { setAdvice(t("seoBox.ai_advice_none")); return; }
+    setAiBusy("advice");
+    try {
+      setAdvice((await ai.ask("You are an SEO editor. For each problem below give one short, concrete fix for THIS page (max 15 words each), in the language of the page. One line per problem, no numbering.", `Focus keyword: ${keywords[0] ?? ""}\nTitle: ${props.post.title ?? ""}\nProblems:\n${bad.join("\n")}\n\nContent:\n${contentText.slice(0, 3000)}`)).trim());
     } catch (e) { notify.error((e as Error).message); } finally { setAiBusy(null); }
   }
   async function aiFill(field: "title" | "description") {
@@ -185,6 +194,10 @@ export function SeoBox(props: MetaBoxProps) {
               </Field>
             )}
             <Checkbox checked={!!seo.pillar} onChange={(v) => update({ pillar: v || undefined })} label={t("seoBox.pillar_content")} description={t("seoBox.the_most_important_post_on")} />
+            {ai.enabled && <div>
+              <Button size="sm" variant="secondary" loading={aiBusy === "advice"} onClick={() => void aiAdvice()}>✨ {t("seoBox.ai_advice")}</Button>
+              {advice && <p className="ecx-muted" style={{ whiteSpace: "pre-line", marginTop: 8 }}>{advice}</p>}
+            </div>}
             <div>
               {GROUPS.map((g) => {
                 const list = result.checks.filter((c) => c.group === g.id);

@@ -41,14 +41,16 @@ export function BulkPage() {
   // AI của core (cần quyền "ai", bật ở Cài đặt › AI): điền mô tả SEO từ nội dung bài; kết quả vào ô sửa, chỉ lưu khi bấm Lưu
   const ai = useAi();
   const [aiRow, setAiRow] = useState<number | "all" | null>(null);
-  async function aiDescription(r: Row) {
+  async function aiField(r: Row, field: "title" | "description" | "keywords") {
     const post = await api.get<{ content?: unknown }>(`/admin/posts/${r.id}`);
     const text = `${r.title}\n\n${extract(post.content as any).text}`.slice(0, 6000);
-    edit(r.id, { description: (await ai.run("seo_description", text)).trim().replace(/^["“]|["”]$/g, "") });
+    if (field === "keywords") edit(r.id, { keywords: (await ai.ask("Suggest 3 to 5 SEO focus keywords for this page, in the page language. One line, comma separated, no numbering, no quotes. Most important first.", text)).trim().replace(/\n/g, ", ") });
+    else edit(r.id, { [field]: (await ai.run(field === "title" ? "title" : "seo_description", text)).trim().replace(/^["“]|["”]$/g, "") });
   }
-  async function aiOne(r: Row) {
+  const aiDescription = (r: Row) => aiField(r, "description");
+  async function aiOne(r: Row, field: "title" | "description" | "keywords" = "description") {
     setAiRow(r.id);
-    try { await aiDescription(r); } catch (e) { notify.error((e as Error).message); } finally { setAiRow(null); }
+    try { await aiField(r, field); } catch (e) { notify.error((e as Error).message); } finally { setAiRow(null); }
   }
   async function aiMissing() {
     setAiRow("all");
@@ -124,6 +126,7 @@ export function BulkPage() {
                       <td>
                         <Input value={v.title} placeholder={r.title} onChange={(e) => edit(r.id, { title: e.target.value })} />
                         <Counter value={v.title || r.title} min={30} max={60} />
+                        {ai.enabled && <Button size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r, "title")}>✨ {t("bulk.ai_fill")}</Button>}
                       </td>
                       <td>
                         <Textarea rows={2} value={v.description} onChange={(e) => edit(r.id, { description: e.target.value })} />
@@ -132,6 +135,7 @@ export function BulkPage() {
                       </td>
                       <td>
                         <Input value={v.keywords} placeholder={t("bulk.comma_separated")} onChange={(e) => edit(r.id, { keywords: e.target.value })} />
+                        {ai.enabled && <Button size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r, "keywords")}>✨ {t("bulk.ai_fill")}</Button>}
                       </td>
                       <td><Checkbox checked={!!v.noindex} onChange={(c) => edit(r.id, { noindex: c })} /></td>
                     </tr>

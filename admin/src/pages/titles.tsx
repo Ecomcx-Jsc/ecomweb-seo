@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Checkbox, Input, PageHeader, Select, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { Button, Card, Checkbox, Input, PageHeader, Select, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { postTypeSettings, taxonomySettings, type SeoSettings, type TypeSettings } from "../../../frontend/lib/settings";
 import { replaceVars, type VarContext } from "../../../frontend/lib/vars";
 import { Hint, ImageField, LinesInput, Loading, RobotsField, Row, SettingsShell, TemplateInput, useContentTypes, useSeoSettings } from "../ui";
@@ -66,6 +66,9 @@ export function TitlesPage() {
   const { postTypes, taxonomies } = useContentTypes();
   const [tab, setTab] = useHashTab("global");
   const s = st.settings;
+  const { data: boot } = useApi<{ site: { title: string; tagline: string } }>("/admin/bootstrap");
+  const ai = useAi();
+  const [aiBusy, setAiBusy] = useState(false);
   const tabs = [
     { value: "global", label: t("common.general") }, { value: "home", label: t("titles.home") },
     ...postTypes.map((p) => ({ value: `pt:${p.name}`, label: p.label })),
@@ -108,7 +111,12 @@ export function TitlesPage() {
             {tab === "home" && (<>
               <Hint>{t("titles.applies_when_the_homepage_shows")}</Hint>
               <Row label={t("titles.title_template")}><TemplateInput value={s.titles.home.title} onChange={(v) => st.patch(["titles", "home", "title"], v)} /><Preview s={s} title={s.titles.home.title} sample={{}} /></Row>
-              <Row label={t("common.description")}><TemplateInput multiline value={s.titles.home.description} onChange={(v) => st.patch(["titles", "home", "description"], v)} /></Row>
+              <Row label={t("common.description")}><TemplateInput multiline value={s.titles.home.description} onChange={(v) => st.patch(["titles", "home", "description"], v)} />
+                {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy} onClick={async () => {
+                  setAiBusy(true);
+                  try { st.patch(["titles", "home", "description"], (await ai.run("seo_description", `${boot?.site.title ?? ""}\n${boot?.site.tagline ?? ""}`.trim())).trim().replace(/^["“]|["”]$/g, "")); }
+                  catch (e) { notify.error((e as Error).message); } finally { setAiBusy(false); }
+                }}>✨ {t("titles.ai_description")}</Button>}</Row>
               <Row label={t("common.robots")}><RobotsField value={s.titles.home.robots} onChange={(v) => st.patch(["titles", "home", "robots"], v)} allowDefault /></Row>
               <Row label={t("titles.share_title")}><Input value={s.titles.home.ogTitle} onChange={(e) => st.patch(["titles", "home", "ogTitle"], e.target.value)} /></Row>
               <Row label={t("titles.share_description")}><Input value={s.titles.home.ogDescription} onChange={(e) => st.patch(["titles", "home", "ogDescription"], e.target.value)} /></Row>

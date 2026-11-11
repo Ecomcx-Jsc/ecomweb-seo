@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Badge, Button, Card, Checkbox, EmptyState, Field, Input, Modal, PageHeader, Select, api, can, notify, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { Badge, Button, Card, Checkbox, EmptyState, Field, Input, Modal, PageHeader, Select, api, can, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { API, Hint, Icon, Loading } from "../ui";
 import { TYPES, errorText } from "./redirects";
 import { t } from "../i18n";
@@ -32,6 +32,21 @@ export function NotFoundPage() {
   async function clear() {
     if (!confirm(t("notfound.clear_the_entire_404_log"))) return;
     await api.post(`${API}/404/clear`); setSelected([]); reload();
+  }
+  // AI chọn trong danh sách trang đã xuất bản (chỉ nhận đường dẫn có thật trong danh sách) trang thay thế hợp nhất cho URL đang hỏng
+  const ai = useAi();
+  const [aiBusy, setAiBusy] = useState(false);
+  async function aiTarget() {
+    const first = items.find((r) => r.id === redirectFor?.[0]);
+    if (!first) return;
+    setAiBusy(true);
+    try {
+      const lists = await Promise.all(["page", "post"].map((ty) => api.get<{ result: { items: { title: string; link: string }[] } }>(`/admin/posts?type=${ty}&status=publish&pageSize=100`)));
+      const pathOf = (l: string) => { try { return new URL(l, location.origin).pathname; } catch { return l; } };
+      const pages = lists.flatMap((l) => l.result.items).map((p) => ({ title: p.title, path: pathOf(p.link) }));
+      const out = (await ai.ask("Pick the ONE page from the list that best replaces the broken URL (same topic). Answer with ONLY that page's path exactly as listed. If nothing fits answer /", `Broken URL: ${first.uri}\n\nPages:\n${pages.map((p) => `${p.path} — ${p.title}`).join("\n")}`)).trim().split(/\s/)[0];
+      if (out === "/" || pages.some((p) => p.path === out)) setTarget(out); else notify.info(t("notfound.ai_no_match"));
+    } catch (e) { notify.error((e as Error).message); } finally { setAiBusy(false); }
   }
   async function createRedirect() {
     if (!redirectFor) return;
@@ -113,7 +128,7 @@ export function NotFoundPage() {
         <div className="ecx-grid">
           <Field label={t("notfound.redirect_type")}><Select value={type} onChange={(e) => setType(e.target.value)} options={TYPES.map((item) => ({ ...item, label: item.label }))} /></Field>
           {type !== "410" && type !== "451" && (
-            <Field label={t("notfound.target_url")} help={t("notfound.a_path_on_your_site")}><Input value={target} placeholder="/" onChange={(e) => setTarget(e.target.value)} /></Field>
+            <Field label={t("notfound.target_url")} help={t("notfound.a_path_on_your_site")}><Input value={target} placeholder="/" onChange={(e) => setTarget(e.target.value)} />{ai.enabled && redirectFor?.length === 1 && <Button size="sm" variant="ghost" loading={aiBusy} onClick={() => void aiTarget()}>✨ {t("notfound.ai_suggest")}</Button>}</Field>
           )}
           <p className="ecx-muted" style={{ margin: 0 }}>{t("notfound.the_selected_urls_are_removed")}</p>
         </div>
