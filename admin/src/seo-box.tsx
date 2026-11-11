@@ -95,7 +95,14 @@ export function SeoBox(props: MetaBoxProps) {
   const contentText = useMemo(() => extract(props.content as any).text, [props.content]);
   // AI của core (Cài đặt › AI): nút chỉ hiện khi AI đã bật; plugin khai quyền "ai" trong plugin.json, chủ site tắt / đặt hạn mức riêng được
   const ai = useAi();
-  const [aiBusy, setAiBusy] = useState<"title" | "description" | null>(null);
+  const [aiBusy, setAiBusy] = useState<"title" | "description" | "keywords" | null>(null);
+  async function aiKeywords() {
+    setAiBusy("keywords");
+    try {
+      const text = await ai.ask("Suggest 3 to 5 SEO focus keywords for this page, in the page language. Return them on one line separated by commas, no numbering, no quotes. Put the single most important keyword first.", `${props.post.title ?? ""}\n\n${contentText}`.slice(0, 6000));
+      update({ focusKeywords: [...new Set([...keywords, ...text.split(/[,\n]/).map((x) => x.trim().replace(/^[-*#\d.)\s]+/, "")).filter(Boolean)])].slice(0, 5) });
+    } catch (e) { notify.error((e as Error).message); } finally { setAiBusy(null); }
+  }
   async function aiFill(field: "title" | "description") {
     setAiBusy(field);
     try {
@@ -159,6 +166,7 @@ export function SeoBox(props: MetaBoxProps) {
             </Field>
             <Field label={t("seoBox.focus_keyword")} help={t("seoBox.the_first_keyword_is_the")}>
               <KeywordsInput value={keywords} onChange={(v) => update({ focusKeywords: v })} />
+              {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy === "keywords"} onClick={() => void aiKeywords()}>✨ {t("seoBox.ai_keywords")}</Button>}
             </Field>
             {keywords.length > 1 && (
               <div className="ecx-grid" style={{ gap: 4 }}>

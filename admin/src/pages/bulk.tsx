@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Button, Card, Checkbox, EmptyState, Input, PageHeader, Select, Textarea, api, notify, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { Button, Card, Checkbox, EmptyState, Input, PageHeader, Select, Textarea, api, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { META_KEY, type PostSeo } from "../../../frontend/lib/settings";
+import { extract } from "../../../frontend/lib/text";
 import { Counter, Loading, ScoreBadge, useContentTypes } from "../ui";
 import { t } from "../i18n";
 
@@ -36,6 +37,25 @@ export function BulkPage() {
     if (filter === "low") return s.score != null && s.score < 50;
     return true;
   });
+
+  // AI của core (cần quyền "ai", bật ở Cài đặt › AI): điền mô tả SEO từ nội dung bài; kết quả vào ô sửa, chỉ lưu khi bấm Lưu
+  const ai = useAi();
+  const [aiRow, setAiRow] = useState<number | "all" | null>(null);
+  async function aiDescription(r: Row) {
+    const post = await api.get<{ content?: unknown }>(`/admin/posts/${r.id}`);
+    const text = `${r.title}\n\n${extract(post.content as any).text}`.slice(0, 6000);
+    edit(r.id, { description: (await ai.run("seo_description", text)).trim().replace(/^["“]|["”]$/g, "") });
+  }
+  async function aiOne(r: Row) {
+    setAiRow(r.id);
+    try { await aiDescription(r); } catch (e) { notify.error((e as Error).message); } finally { setAiRow(null); }
+  }
+  async function aiMissing() {
+    setAiRow("all");
+    let n = 0;
+    try { for (const r of rows.filter((x) => !value(x).description).slice(0, 10)) { await aiDescription(r); n++; } }
+    catch (e) { notify.error((e as Error).message); } finally { setAiRow(null); if (n) notify.success(t("bulk.ai_done", { count: n })); }
+  }
 
   function guard(fn: () => void) {
     if (dirty && !confirm(t("bulk.discard_unsaved_changes"))) return;
@@ -77,6 +97,7 @@ export function BulkPage() {
           <Select style={{ width: 200 }} value={filter} onChange={(e) => setFilter(e.target.value)}
             options={[{ value: "", label: t("bulk.all_posts") }, { value: "noDescription", label: t("bulk.no_seo_description") }, { value: "noKeyword", label: t("bulk.no_keyword_yet") }, { value: "low", label: t("bulk.score_below_50") }]} />
           <span className="ecx-spacer" />
+          {ai.enabled && <Button variant="secondary" loading={aiRow === "all"} onClick={() => void aiMissing()}>✨ {t("bulk.ai_fill_missing")}</Button>}
           <Input style={{ width: 220 }} value={search} placeholder={t("bulk.search_posts")} onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") guard(() => { setQ(search); setPage(1); }); }} />
         </div>
@@ -107,6 +128,7 @@ export function BulkPage() {
                       <td>
                         <Textarea rows={2} value={v.description} onChange={(e) => edit(r.id, { description: e.target.value })} />
                         <Counter value={v.description ?? ""} min={120} max={160} />
+                        {ai.enabled && <Button size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r)}>✨ {t("bulk.ai_fill")}</Button>}
                       </td>
                       <td>
                         <Input value={v.keywords} placeholder={t("bulk.comma_separated")} onChange={(e) => edit(r.id, { keywords: e.target.value })} />
