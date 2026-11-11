@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Badge, Button, Card, Checkbox, Input, PageHeader, Select, Table, Textarea, api, notify, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { Badge, Button, Card, Checkbox, Input, PageHeader, Select, Table, Textarea, api, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { Hint, Icon, LinesInput, Loading, Row, SettingsShell, API, useContentTypes, useSeoSettings } from "../ui";
 import { useHashTab } from "./titles";
 import { t } from "../i18n";
@@ -50,6 +50,9 @@ export function SettingsPage() {
   const { postTypes } = useContentTypes();
   const [tab, setTab] = useHashTab("links");
   const s = st.settings;
+  const ai = useAi();
+  const [aiBusy, setAiBusy] = useState(false);
+  const { data: boot } = useApi<{ site: { title: string; tagline: string } }>("/admin/bootstrap");
   const tabs = [
     { value: "links", label: t("settings.links") }, { value: "breadcrumbs", label: t("settings.breadcrumbs") }, { value: "images", label: t("settings.image_seo") },
     { value: "redirects", label: t("common.redirects") }, { value: "404", label: t("settings.404_monitor") }, { value: "webmaster", label: t("settings.site_verification") },
@@ -156,7 +159,12 @@ export function SettingsPage() {
               <Hint>{t("settings.llms_txt_helps_ai_assistants")}</Hint>
               <Row label={t("common.content_types")}>{types(s.llmsTxt.postTypes, ["llmsTxt", "postTypes"])}</Row>
               <Row label={t("settings.posts_per_type")}><Input type="number" min={5} max={200} style={{ width: 120 }} value={s.llmsTxt.limit} onChange={(e) => st.patch(["llmsTxt", "limit"], Number(e.target.value))} /></Row>
-              <Row label={t("settings.extra_content")} help={t("settings.markdown_appended_at_the_end")}><Textarea rows={5} value={s.llmsTxt.extra} onChange={(e) => st.patch(["llmsTxt", "extra"], e.target.value)} /></Row>
+              <Row label={t("settings.extra_content")} help={t("settings.markdown_appended_at_the_end")}><Textarea rows={5} value={s.llmsTxt.extra} onChange={(e) => st.patch(["llmsTxt", "extra"], e.target.value)} />
+                {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy} onClick={async () => {
+                  setAiBusy(true);
+                  try { st.patch(["llmsTxt", "extra"], (await ai.ask("Write a short Markdown introduction (3-5 sentences, no headings) describing what this website is about, for AI assistants reading llms.txt. Use only what the name and tagline say; do not invent facts. In the language of the tagline.", `${boot?.site.title ?? ""}\n${boot?.site.tagline ?? ""}`.trim())).trim()); }
+                  catch (e) { notify.error((e as Error).message); } finally { setAiBusy(false); }
+                }}>✨ {t("settings.ai_llms")}</Button>}</Row>
             </>)}
 
             {tab === "indexnow" && (<>

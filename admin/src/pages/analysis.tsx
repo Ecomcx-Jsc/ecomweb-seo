@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, Card, EmptyState, Input, PageHeader, Select, Tabs, api, notify, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { Button, Card, EmptyState, Input, PageHeader, Select, Tabs, api, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { API, Hint, Icon, Loading, ScoreBadge, StatusIcon } from "../ui";
 import { useHashTab } from "./titles";
 import { t } from "../i18n";
@@ -14,6 +14,17 @@ const ORDER: Status[] = ["fail", "warning", "pass", "info"];
 
 function Results({ items }: { items: AuditItem[] }) {
   const [filter, setFilter] = useState<"" | Status>("");
+  // AI xếp thứ tự ưu tiên các lỗi / cảnh báo của lần phân tích này (chỉ gửi tiêu đề + thông điệp, không gửi nội dung bài)
+  const ai = useAi();
+  const [advice, setAdvice] = useState<string | null>(null);
+  const [aiBusy, setAiBusy] = useState(false);
+  async function aiPriorities() {
+    const bad = items.filter((i) => i.status === "fail" || i.status === "warning").slice(0, 40).map((i) => `[${i.status}] ${i.title}: ${t(i.message, Object.fromEntries((i.args ?? []).map((a, k) => [k, a])))}`);
+    if (!bad.length) { setAdvice(t("analysis.ai_priorities_none")); return; }
+    setAiBusy(true);
+    try { setAdvice((await ai.ask("You are an SEO consultant. From the findings below pick the 5 most valuable fixes, most important first. One line each: what to do and why, max 20 words, in the language of the findings. No numbering.", bad.join("\n"))).trim()); }
+    catch (e) { notify.error((e as Error).message); } finally { setAiBusy(false); }
+  }
   const [open, setOpen] = useState<string | null>(null);
   const counts = { fail: 0, warning: 0, pass: 0, info: 0 } as Record<Status, number>;
   items.forEach((i) => counts[i.status]++);
@@ -25,6 +36,10 @@ function Results({ items }: { items: AuditItem[] }) {
         { value: "", label: t("analysis.all"), count: items.length }, { value: "fail", label: t("analysis.errors"), count: counts.fail },
         { value: "warning", label: t("analysis.warnings"), count: counts.warning }, { value: "pass", label: t("analysis.passed"), count: counts.pass },
       ]} />
+      {ai.enabled && <div style={{ marginTop: 12 }}>
+        <Button size="sm" variant="secondary" loading={aiBusy} onClick={() => void aiPriorities()}>✨ {t("analysis.ai_priorities")}</Button>
+        {advice && <p className="ecx-muted" style={{ whiteSpace: "pre-line", marginTop: 8 }}>{advice}</p>}
+      </div>}
       <div style={{ marginTop: 12 }}>
         {groups.map((g) => {
           const list = shown.filter((i) => i.group === g).sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status));
