@@ -8,8 +8,8 @@
     "test": "node scripts/test.mjs"
   },
   "devDependencies": {
-    "@ecomcx/ecomweb-admin-sdk": "^1.37.0",
-    "@ecomcx/ecomweb-theme-sdk": "^1.37.0",
+    "@ecomcx/ecomweb-admin-sdk": "^1.38.2",
+    "@ecomcx/ecomweb-theme-sdk": "^1.38.2",
     "@types/react": "^19",
     "esbuild": "^0.25.10",
     "typescript": "5.9.3"

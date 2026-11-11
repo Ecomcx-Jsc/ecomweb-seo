@@ -701,6 +701,7 @@
  "seoBox.the_seo_box_is_hidden": "Hộp SEO đã được ẩn cho loại nội dung này (SEO › Tiêu đề & Meta).",
  "seoBox.this_keyword_is_already_the": "Từ khoá này đã là từ khoá chính của: {posts}",
  "seoBox.title": "tiêu đề",
+ "seoBox.ai_generate": "Tạo bằng AI",
  "seoBox.title_2": "Tiêu đề",
  "seoBox.title_description": "Tiêu đề & mô tả",
  "seoBox.to_improve": "{warn} cần cải thiện",

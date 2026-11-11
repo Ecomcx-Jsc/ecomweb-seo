@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Checkbox, Field, Input, Select, Tabs, api, useApi, type MetaBoxProps } from "@ecomcx/ecomweb-admin-sdk";
+import { Button, Checkbox, Field, Input, Select, Tabs, api, notify, useAi, useApi, type MetaBoxProps } from "@ecomcx/ecomweb-admin-sdk";
 import { analyze, quickKeyword, type Check } from "../../frontend/lib/analysis";
 import { META_KEY, postTypeSettings, type PostSeo, type SeoSettings } from "../../frontend/lib/settings";
 import { extract } from "../../frontend/lib/text";
@@ -93,6 +93,16 @@ export function SeoBox(props: MetaBoxProps) {
   const site = boot?.site ?? { title: "", tagline: "", url: props.siteUrl ?? "" };
   const typeCfg = postTypeSettings(settings, props.postType);
   const contentText = useMemo(() => extract(props.content as any).text, [props.content]);
+  // AI của core (Cài đặt › AI): nút chỉ hiện khi AI đã bật; plugin khai quyền "ai" trong plugin.json, chủ site tắt / đặt hạn mức riêng được
+  const ai = useAi();
+  const [aiBusy, setAiBusy] = useState<"title" | "description" | null>(null);
+  async function aiFill(field: "title" | "description") {
+    setAiBusy(field);
+    try {
+      const text = (await ai.run(field === "title" ? "title" : "seo_description", `${props.post.title ?? ""}\n\n${contentText}`.slice(0, 6000))).trim().replace(/^["“]|["”]$/g, "");
+      update({ [field]: text });
+    } catch (e) { notify.error((e as Error).message); } finally { setAiBusy(null); }
+  }
   const vars: VarContext = {
     site: { title: site.title, tagline: site.tagline, url: site.url }, sep: settings?.general?.separator || "-",
     post: { id: props.post.id, type: props.postType, title: props.post.title, excerpt: props.excerpt, contentText, link: props.link, publishedAt: props.post.publishedAt ?? new Date().toISOString(), updatedAt: props.post.updatedAt },
@@ -141,9 +151,11 @@ export function SeoBox(props: MetaBoxProps) {
             <SerpPreview siteName={site.title} title={title} description={description} url={url} keyword={kw} />
             <Field label={t("common.seo_title")} help={<Counter value={title} min={30} max={60} />}>
               <TemplateInput value={seo.title ?? ""} placeholder={typeCfg.title} onChange={(v) => update({ title: v || undefined })} />
+              {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy === "title"} onClick={() => void aiFill("title")}>✨ {t("seoBox.ai_generate")}</Button>}
             </Field>
             <Field label={t("common.seo_description")} help={<Counter value={description} min={120} max={160} />}>
               <TemplateInput multiline value={seo.description ?? ""} placeholder={typeCfg.description} onChange={(v) => update({ description: v || undefined })} />
+              {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy === "description"} onClick={() => void aiFill("description")}>✨ {t("seoBox.ai_generate")}</Button>}
             </Field>
             <Field label={t("seoBox.focus_keyword")} help={t("seoBox.the_first_keyword_is_the")}>
               <KeywordsInput value={keywords} onChange={(v) => update({ focusKeywords: v })} />

@@ -701,6 +701,7 @@
  "seoBox.the_seo_box_is_hidden": "The SEO box is hidden for this content type (SEO › Titles & Meta).",
  "seoBox.this_keyword_is_already_the": "This keyword is already the focus keyword of: {posts}",
  "seoBox.title": "title",
+ "seoBox.ai_generate": "Generate with AI",
  "seoBox.title_2": "Title",
  "seoBox.title_description": "Title & description",
  "seoBox.to_improve": "{warn} to improve",
