@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Button, Card, Checkbox, EmptyState, Input, PageHeader, Select, Textarea, api, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { AiIcon, Button, Card, Checkbox, EmptyState, Input, PageHeader, Select, Textarea, api, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { META_KEY, type PostSeo } from "../../../frontend/lib/settings";
 import { extract } from "../../../frontend/lib/text";
-import { Counter, Loading, ScoreBadge, useContentTypes } from "../ui";
+import { Counter, Loading, SEO_AI, ScoreBadge, useContentTypes } from "../ui";
 import { t } from "../i18n";
 
 interface Row { id: number; type: string; title: string; slug: string; status: string; link: string; meta?: Record<string, any> | null }
@@ -45,18 +45,42 @@ export function BulkPage() {
     const post = await api.get<{ content?: unknown }>(`/admin/posts/${r.id}`);
     const text = `${r.title}\n\n${extract(post.content as any).text}`.slice(0, 6000);
     if (field === "keywords") edit(r.id, { keywords: (await ai.ask("Suggest 3 to 5 SEO focus keywords for this page, in the page language. One line, comma separated, no numbering, no quotes. Most important first.", text)).trim().replace(/\n/g, ", ") });
-    else edit(r.id, { [field]: (await ai.run(field === "title" ? "title" : "seo_description", text)).trim().replace(/^["“]|["”]$/g, "") });
+    else edit(r.id, { [field]: (await ai.run(field === "title" ? "title" : "seo_description", text, SEO_AI)).trim().replace(/^["“]|["”]$/g, "") });
   }
-  const aiDescription = (r: Row) => aiField(r, "description");
   async function aiOne(r: Row, field: "title" | "description" | "keywords" = "description") {
     setAiRow(r.id);
     try { await aiField(r, field); } catch (e) { notify.error((e as Error).message); } finally { setAiRow(null); }
   }
+  // Điền hàng loạt: gom thành MỘT changeset (core xem / áp dụng / hoàn tác được), không lưu từng dòng
+  const [review, setReview] = useState<{ id: number; items: Array<{ title: string; description: string }> } | null>(null);
+  const [applying, setApplying] = useState(false);
   async function aiMissing() {
     setAiRow("all");
-    let n = 0;
-    try { for (const r of rows.filter((x) => !value(x).description).slice(0, 10)) { await aiDescription(r); n++; } }
-    catch (e) { notify.error((e as Error).message); } finally { setAiRow(null); if (n) notify.success(t("bulk.ai_done", { count: n })); }
+    const items: Array<{ kind: string; target: string; label: string; after: unknown }> = [];
+    const shown: Array<{ title: string; description: string }> = [];
+    try {
+      for (const r of rows.filter((x) => !value(x).description).slice(0, 10)) {
+        const post = await api.get<{ content?: unknown }>(`/admin/posts/${r.id}`);
+        const description = (await ai.run("seo_description", `${r.title}\n\n${extract(post.content as any).text}`.slice(0, 6000), SEO_AI)).trim().replace(/^["“]|["”]$/g, "");
+        if (!description) continue;
+        items.push({ kind: "post.update", target: String(r.id), label: r.title || `#${r.id}`, after: { meta: { [META_KEY]: { ...seoOf(r), description } } } });
+        shown.push({ title: r.title || `#${r.id}`, description });
+      }
+      if (items.length) {
+        const cs = await api.post<{ id: number }>("/admin/changesets", { title: t("bulk.ai_changeset_title"), source: "plugin:ecomcx-seo", items });
+        setReview({ id: cs.id, items: shown });
+      }
+    }
+    catch (e) { notify.error((e as Error).message); } finally { setAiRow(null); if (items.length) notify.success(t("bulk.ai_done", { count: items.length })); }
+  }
+  async function decide(apply: boolean) {
+    if (!review) return;
+    setApplying(true);
+    try {
+      await api.post(`/admin/changesets/${review.id}/${apply ? "apply" : "reject"}`, {});
+      notify.success(apply ? t("bulk.ai_applied") : t("bulk.ai_rejected"));
+      setReview(null); reload();
+    } catch (e) { notify.error((e as Error).message); } finally { setApplying(false); }
   }
 
   function guard(fn: () => void) {
@@ -90,6 +114,17 @@ export function BulkPage() {
     <>
       <PageHeader title={t("bulk.bulk_seo_editor")} description={t("bulk.quickly_edit_seo_titles_descriptions")}
         actions={<Button variant="primary" loading={saving} disabled={!dirty} onClick={saveAll}>{dirty ? t("bulk.save_posts", { dirty }) : t("common.save_changes")}</Button>} />
+      {review && (
+        <Card title={t("bulk.ai_review_title", { count: review.items.length })}>
+          <ul style={{ margin: "0 0 12px", paddingLeft: 18 }}>
+            {review.items.map((x, i) => <li key={i}><strong>{x.title}</strong>: {x.description}</li>)}
+          </ul>
+          <div className="ecx-flex">
+            <Button variant="primary" loading={applying} onClick={() => void decide(true)}>{t("bulk.ai_apply")}</Button>
+            <Button variant="secondary" disabled={applying} onClick={() => void decide(false)}>{t("bulk.ai_reject")}</Button>
+          </div>
+        </Card>
+      )}
       <Card>
         <div className="ecx-flex" style={{ marginBottom: 12, flexWrap: "wrap" }}>
           <Select style={{ width: 160 }} value={type} onChange={(e) => { const v = e.target.value; guard(() => { setType(v); setPage(1); }); }}
@@ -99,7 +134,7 @@ export function BulkPage() {
           <Select style={{ width: 200 }} value={filter} onChange={(e) => setFilter(e.target.value)}
             options={[{ value: "", label: t("bulk.all_posts") }, { value: "noDescription", label: t("bulk.no_seo_description") }, { value: "noKeyword", label: t("bulk.no_keyword_yet") }, { value: "low", label: t("bulk.score_below_50") }]} />
           <span className="ecx-spacer" />
-          {ai.enabled && <Button variant="secondary" loading={aiRow === "all"} onClick={() => void aiMissing()}>✨ {t("bulk.ai_fill_missing")}</Button>}
+          {ai.enabled && <Button icon={<AiIcon />} variant="secondary" loading={aiRow === "all"} onClick={() => void aiMissing()}>{t("bulk.ai_fill_missing")}</Button>}
           <Input style={{ width: 220 }} value={search} placeholder={t("bulk.search_posts")} onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") guard(() => { setQ(search); setPage(1); }); }} />
         </div>
@@ -126,16 +161,16 @@ export function BulkPage() {
                       <td>
                         <Input value={v.title} placeholder={r.title} onChange={(e) => edit(r.id, { title: e.target.value })} />
                         <Counter value={v.title || r.title} min={30} max={60} />
-                        {ai.enabled && <Button size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r, "title")}>✨ {t("bulk.ai_fill")}</Button>}
+                        {ai.enabled && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r, "title")}>{t("bulk.ai_fill")}</Button>}
                       </td>
                       <td>
                         <Textarea rows={2} value={v.description} onChange={(e) => edit(r.id, { description: e.target.value })} />
                         <Counter value={v.description ?? ""} min={120} max={160} />
-                        {ai.enabled && <Button size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r)}>✨ {t("bulk.ai_fill")}</Button>}
+                        {ai.enabled && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r)}>{t("bulk.ai_fill")}</Button>}
                       </td>
                       <td>
                         <Input value={v.keywords} placeholder={t("bulk.comma_separated")} onChange={(e) => edit(r.id, { keywords: e.target.value })} />
-                        {ai.enabled && <Button size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r, "keywords")}>✨ {t("bulk.ai_fill")}</Button>}
+                        {ai.enabled && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiRow === r.id} onClick={() => void aiOne(r, "keywords")}>{t("bulk.ai_fill")}</Button>}
                       </td>
                       <td><Checkbox checked={!!v.noindex} onChange={(c) => edit(r.id, { noindex: c })} /></td>
                     </tr>

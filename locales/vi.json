@@ -705,7 +705,7 @@
  "seoBox.ai_keywords": "Gợi ý từ khoá bằng AI",
  "bulk.ai_fill": "Điền bằng AI",
  "bulk.ai_fill_missing": "AI điền mô tả còn thiếu (tối đa 10 bài)",
- "bulk.ai_done": "Đã điền {count} bài — xem lại rồi bấm Lưu",
+ "bulk.ai_done": "AI đã đề xuất mô tả cho {count} bài — xem lại rồi áp dụng",
  "notfound.ai_suggest": "Gợi ý đích bằng AI",
  "notfound.ai_no_match": "AI chưa tìm được trang phù hợp — hãy nhập tay",
  "seoBox.ai_advice": "AI gợi ý cách sửa",
@@ -971,5 +971,16 @@
  "vars.tags_of_the_post": "Các thẻ của bài",
  "vars.today_s_date": "Ngày hôm nay",
  "vars.total_pages": "Tổng số trang",
- "vars.value_of_a_custom_field": "Giá trị trường tuỳ chỉnh của bài"
+ "vars.value_of_a_custom_field": "Giá trị trường tuỳ chỉnh của bài",
+ "dashboard.ai_on": "AI đang bật",
+ "dashboard.ai_on_help": "Nút AI có trong hộp SEO của bài viết, Sửa hàng loạt và kết quả Phân tích",
+ "dashboard.ai_off_site": "Bật AI cho website",
+ "dashboard.ai_off_plugin": "Bật AI cho SEO",
+ "dashboard.ai_off_limit": "SEO đã hết lượt AI tháng này",
+ "bulk.ai_changeset_title": "AI điền mô tả SEO còn thiếu",
+ "bulk.ai_review_title": "AI đề xuất mô tả SEO cho {count} bài",
+ "bulk.ai_apply": "Áp dụng tất cả",
+ "bulk.ai_reject": "Bỏ đề xuất",
+ "bulk.ai_applied": "Đã áp dụng mô tả SEO",
+ "bulk.ai_rejected": "Đã bỏ đề xuất"
 }

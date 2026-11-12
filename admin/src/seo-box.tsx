@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Checkbox, Field, Input, Select, Tabs, api, notify, useAi, useApi, type MetaBoxProps } from "@ecomcx/ecomweb-admin-sdk";
+import { AiIcon, Button, Checkbox, Field, Input, Select, Tabs, api, notify, type MetaBoxProps, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { analyze, quickKeyword, type Check } from "../../frontend/lib/analysis";
 import { META_KEY, postTypeSettings, type PostSeo, type SeoSettings } from "../../frontend/lib/settings";
 import { extract } from "../../frontend/lib/text";
 import { replaceVars, type VarContext } from "../../frontend/lib/vars";
 import { SchemaList } from "./schema-editor";
-import { API, Counter, Hint, Icon, ImageField, RobotsField, ScoreBadge, StatusIcon, TemplateInput } from "./ui";
+import { API, Counter, Hint, Icon, ImageField, RobotsField, SEO_AI, ScoreBadge, StatusIcon, TemplateInput } from "./ui";
 import { t } from "./i18n";
 
 const GROUPS: Array<{ id: Check["group"]; label: string }> = [
@@ -115,7 +115,7 @@ export function SeoBox(props: MetaBoxProps) {
   async function aiFill(field: "title" | "description") {
     setAiBusy(field);
     try {
-      const text = (await ai.run(field === "title" ? "title" : "seo_description", `${props.post.title ?? ""}\n\n${contentText}`.slice(0, 6000))).trim().replace(/^["“]|["”]$/g, "");
+      const text = (await ai.run(field === "title" ? "title" : "seo_description", `${props.post.title ?? ""}\n\n${contentText}`.slice(0, 6000), SEO_AI)).trim().replace(/^["“]|["”]$/g, "");
       update({ [field]: text });
     } catch (e) { notify.error((e as Error).message); } finally { setAiBusy(null); }
   }
@@ -167,15 +167,15 @@ export function SeoBox(props: MetaBoxProps) {
             <SerpPreview siteName={site.title} title={title} description={description} url={url} keyword={kw} />
             <Field label={t("common.seo_title")} help={<Counter value={title} min={30} max={60} />}>
               <TemplateInput value={seo.title ?? ""} placeholder={typeCfg.title} onChange={(v) => update({ title: v || undefined })} />
-              {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy === "title"} onClick={() => void aiFill("title")}>✨ {t("seoBox.ai_generate")}</Button>}
+              {ai.enabled && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiBusy === "title"} onClick={() => void aiFill("title")}>{t("seoBox.ai_generate")}</Button>}
             </Field>
             <Field label={t("common.seo_description")} help={<Counter value={description} min={120} max={160} />}>
               <TemplateInput multiline value={seo.description ?? ""} placeholder={typeCfg.description} onChange={(v) => update({ description: v || undefined })} />
-              {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy === "description"} onClick={() => void aiFill("description")}>✨ {t("seoBox.ai_generate")}</Button>}
+              {ai.enabled && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiBusy === "description"} onClick={() => void aiFill("description")}>{t("seoBox.ai_generate")}</Button>}
             </Field>
             <Field label={t("seoBox.focus_keyword")} help={t("seoBox.the_first_keyword_is_the")}>
               <KeywordsInput value={keywords} onChange={(v) => update({ focusKeywords: v })} />
-              {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy === "keywords"} onClick={() => void aiKeywords()}>✨ {t("seoBox.ai_keywords")}</Button>}
+              {ai.enabled && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiBusy === "keywords"} onClick={() => void aiKeywords()}>{t("seoBox.ai_keywords")}</Button>}
             </Field>
             {keywords.length > 1 && (
               <div className="ecx-grid" style={{ gap: 4 }}>
@@ -195,7 +195,7 @@ export function SeoBox(props: MetaBoxProps) {
             )}
             <Checkbox checked={!!seo.pillar} onChange={(v) => update({ pillar: v || undefined })} label={t("seoBox.pillar_content")} description={t("seoBox.the_most_important_post_on")} />
             {ai.enabled && <div>
-              <Button size="sm" variant="secondary" loading={aiBusy === "advice"} onClick={() => void aiAdvice()}>✨ {t("seoBox.ai_advice")}</Button>
+              <Button icon={<AiIcon />} size="sm" variant="secondary" loading={aiBusy === "advice"} onClick={() => void aiAdvice()}>{t("seoBox.ai_advice")}</Button>
               {advice && <p className="ecx-muted" style={{ whiteSpace: "pre-line", marginTop: 8 }}>{advice}</p>}
             </div>}
             <div>

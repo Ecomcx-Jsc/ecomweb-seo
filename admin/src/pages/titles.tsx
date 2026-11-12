@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Button, Card, Checkbox, Input, PageHeader, Select, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { AiIcon, Button, Card, Checkbox, Input, PageHeader, Select, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { postTypeSettings, taxonomySettings, type SeoSettings, type TypeSettings } from "../../../frontend/lib/settings";
 import { replaceVars, type VarContext } from "../../../frontend/lib/vars";
-import { Hint, ImageField, LinesInput, Loading, RobotsField, Row, SettingsShell, TemplateInput, useContentTypes, useSeoSettings } from "../ui";
+import { Hint, ImageField, LinesInput, Loading, RobotsField, Row, SEO_AI, SettingsShell, TemplateInput, useContentTypes, useSeoSettings } from "../ui";
 import { t } from "../i18n";
 
 export function useHashTab(fallback: string): [string, (item: string) => void] {
@@ -112,11 +112,11 @@ export function TitlesPage() {
               <Hint>{t("titles.applies_when_the_homepage_shows")}</Hint>
               <Row label={t("titles.title_template")}><TemplateInput value={s.titles.home.title} onChange={(v) => st.patch(["titles", "home", "title"], v)} /><Preview s={s} title={s.titles.home.title} sample={{}} /></Row>
               <Row label={t("common.description")}><TemplateInput multiline value={s.titles.home.description} onChange={(v) => st.patch(["titles", "home", "description"], v)} />
-                {ai.enabled && <Button size="sm" variant="ghost" loading={aiBusy} onClick={async () => {
+                {ai.enabled && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiBusy} onClick={async () => {
                   setAiBusy(true);
-                  try { st.patch(["titles", "home", "description"], (await ai.run("seo_description", `${boot?.site.title ?? ""}\n${boot?.site.tagline ?? ""}`.trim())).trim().replace(/^["“]|["”]$/g, "")); }
+                  try { st.patch(["titles", "home", "description"], (await ai.run("seo_description", `${boot?.site.title ?? ""}\n${boot?.site.tagline ?? ""}`.trim(), SEO_AI)).trim().replace(/^["“]|["”]$/g, "")); }
                   catch (e) { notify.error((e as Error).message); } finally { setAiBusy(false); }
-                }}>✨ {t("titles.ai_description")}</Button>}</Row>
+                }}>{t("titles.ai_description")}</Button>}</Row>
               <Row label={t("common.robots")}><RobotsField value={s.titles.home.robots} onChange={(v) => st.patch(["titles", "home", "robots"], v)} allowDefault /></Row>
               <Row label={t("titles.share_title")}><Input value={s.titles.home.ogTitle} onChange={(e) => st.patch(["titles", "home", "ogTitle"], e.target.value)} /></Row>
               <Row label={t("titles.share_description")}><Input value={s.titles.home.ogDescription} onChange={(e) => st.patch(["titles", "home", "ogDescription"], e.target.value)} /></Row>

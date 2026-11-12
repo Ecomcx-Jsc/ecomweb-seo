@@ -1,4 +1,4 @@
-import { Button, Card, PageHeader, Switch, can, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { AiIcon, Badge, Button, Card, PageHeader, Switch, can, navigate, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { API, Loading, ScoreBadge, useSeoSettings } from "../ui";
 import { t } from "../i18n";
 
@@ -30,7 +30,9 @@ export function DashboardPage() {
   const { data: stats } = useApi<Stats>(`${API}/dashboard`);
   const st = useSeoSettings();
   const admin = can("ecx_seo_settings");
-  const go = (path: string) => { location.hash = "#" + path; };
+  const go = (path: string) => navigate(path);
+  // Where AI stands for SEO: on (buttons in the SEO box, bulk edit, audit) or why not - the buttons are hidden when it is off
+  const ai = useAi();
   const p = stats?.posts;
   const pct = (n: number) => (p && p.total ? `${(n / p.total) * 100}%` : "0%");
 
@@ -42,7 +44,11 @@ export function DashboardPage() {
   return (
     <>
       <PageHeader title={t("dashboard.seo")} description={t("dashboard.search_optimization_overview_of_your")}
-        actions={<Button variant="secondary" onClick={() => go("/ecx-seo/analysis")}>{t("dashboard.site_audit")}</Button>} />
+        actions={<>
+          {ai.enabled ? <span title={t("dashboard.ai_on_help")}><Badge tone="green">{t("dashboard.ai_on")}</Badge></span>
+            : ai.reason && can("manage_options") && <Button variant="ghost" icon={<AiIcon />} onClick={() => go("/settings/ai")}>{t(`dashboard.ai_off_${ai.reason}`)}</Button>}
+          <Button variant="secondary" onClick={() => go("/ecx-seo/analysis")}>{t("dashboard.site_audit")}</Button>
+        </>} />
       {!stats ? <Loading /> : (
         <div className="ecx-stats" style={{ marginBottom: 16 }}>
           <div className="ecx-stat">

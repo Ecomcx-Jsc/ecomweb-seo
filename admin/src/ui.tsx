@@ -5,6 +5,8 @@ import { VARIABLES } from "../../frontend/lib/vars";
 import { t } from "./i18n";
 
 export const API = "/plugins/ecomcx-seo";
+// Slot AI "seo.meta": core ghép kỹ năng SEO (skills/seo-writing.md) vào lời nhắc
+export const SEO_AI = { slot: "seo.meta" } as const;
 
 // ------------------------------------------------------------------ biểu tượng (SVG nhỏ, không phụ thuộc thư viện)
 const svg = (d: ReactNode, size = 16) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>{d}</svg>;

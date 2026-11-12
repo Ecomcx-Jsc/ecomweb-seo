@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Badge, Button, Card, Checkbox, EmptyState, Field, Input, Modal, PageHeader, Select, api, can, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { AiIcon, Badge, Button, Card, Checkbox, EmptyState, Field, Input, Modal, PageHeader, Select, api, can, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { API, Hint, Icon, Loading } from "../ui";
 import { TYPES, errorText } from "./redirects";
 import { t } from "../i18n";
@@ -128,7 +128,7 @@ export function NotFoundPage() {
         <div className="ecx-grid">
           <Field label={t("notfound.redirect_type")}><Select value={type} onChange={(e) => setType(e.target.value)} options={TYPES.map((item) => ({ ...item, label: item.label }))} /></Field>
           {type !== "410" && type !== "451" && (
-            <Field label={t("notfound.target_url")} help={t("notfound.a_path_on_your_site")}><Input value={target} placeholder="/" onChange={(e) => setTarget(e.target.value)} />{ai.enabled && redirectFor?.length === 1 && <Button size="sm" variant="ghost" loading={aiBusy} onClick={() => void aiTarget()}>✨ {t("notfound.ai_suggest")}</Button>}</Field>
+            <Field label={t("notfound.target_url")} help={t("notfound.a_path_on_your_site")}><Input value={target} placeholder="/" onChange={(e) => setTarget(e.target.value)} />{ai.enabled && redirectFor?.length === 1 && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiBusy} onClick={() => void aiTarget()}>{t("notfound.ai_suggest")}</Button>}</Field>
           )}
           <p className="ecx-muted" style={{ margin: 0 }}>{t("notfound.the_selected_urls_are_removed")}</p>
         </div>

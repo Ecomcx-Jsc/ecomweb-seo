@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, Card, EmptyState, Input, PageHeader, Select, Tabs, api, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { AiIcon, Button, Card, EmptyState, Input, PageHeader, Select, Tabs, api, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { API, Hint, Icon, Loading, ScoreBadge, StatusIcon } from "../ui";
 import { useHashTab } from "./titles";
 import { t } from "../i18n";
@@ -37,7 +37,7 @@ function Results({ items }: { items: AuditItem[] }) {
         { value: "warning", label: t("analysis.warnings"), count: counts.warning }, { value: "pass", label: t("analysis.passed"), count: counts.pass },
       ]} />
       {ai.enabled && <div style={{ marginTop: 12 }}>
-        <Button size="sm" variant="secondary" loading={aiBusy} onClick={() => void aiPriorities()}>✨ {t("analysis.ai_priorities")}</Button>
+        <Button icon={<AiIcon />} size="sm" variant="secondary" loading={aiBusy} onClick={() => void aiPriorities()}>{t("analysis.ai_priorities")}</Button>
         {advice && <p className="ecx-muted" style={{ whiteSpace: "pre-line", marginTop: 8 }}>{advice}</p>}
       </div>}
       <div style={{ marginTop: 12 }}>

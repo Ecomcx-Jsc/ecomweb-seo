@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Field, Input, notify, registerDashboardWidget, useAi, registerEditorSidebar, registerMetaBox, registerPage, registerPostListColumn, registerTermMetaBox, useApi, type MetaBoxProps, type TermMetaBoxProps } from "@ecomcx/ecomweb-admin-sdk";
+import { AiIcon, Button, Field, Input, notify, registerDashboardWidget, registerEditorSidebar, registerMetaBox, registerPage, registerPostListColumn, registerTermMetaBox, type MetaBoxProps, type TermMetaBoxProps, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { META_KEY, type PostSeo } from "../../frontend/lib/settings";
 import { AnalysisPage } from "./pages/analysis";
 import { BulkPage } from "./pages/bulk";
@@ -12,7 +12,7 @@ import { SitemapPage } from "./pages/sitemap";
 import { TitlesPage } from "./pages/titles";
 import { ToolsPage } from "./pages/tools";
 import { SeoBox } from "./seo-box";
-import { API, Counter, ImageField, RobotsField, ScoreBadge, TemplateInput } from "./ui";
+import { API, Counter, ImageField, RobotsField, SEO_AI, ScoreBadge, TemplateInput } from "./ui";
 import "./seo.css";
 import { t } from "./i18n";
 
@@ -68,7 +68,7 @@ function TermSeoBox({ meta, setMeta, term }: TermMetaBoxProps) {
   async function aiFill(field: "title" | "description") {
     setBusy(field);
     try {
-      const text = (await ai.run(field === "title" ? "title" : "seo_description", `${term.name}\n\n${term.description ?? ""}`.trim())).trim().replace(/^["“]|["”]$/g, "");
+      const text = (await ai.run(field === "title" ? "title" : "seo_description", `${term.name}\n\n${term.description ?? ""}`.trim(), SEO_AI)).trim().replace(/^["“]|["”]$/g, "");
       update({ [field]: text });
     } catch (e) { notify.error((e as Error).message); } finally { setBusy(null); }
   }
@@ -76,11 +76,11 @@ function TermSeoBox({ meta, setMeta, term }: TermMetaBoxProps) {
     <div className="ecx-grid">
       <Field label={t("common.seo_title")} help={<Counter value={seo.title ?? ""} min={30} max={60} />}>
         <TemplateInput value={seo.title ?? ""} placeholder={`${term.name || t("app.category_name")} …`} onChange={(v) => update({ title: v || undefined })} />
-        {ai.enabled && term.name && <Button size="sm" variant="ghost" loading={busy === "title"} onClick={() => void aiFill("title")}>✨ {t("app.ai_term_title")}</Button>}
+        {ai.enabled && term.name && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={busy === "title"} onClick={() => void aiFill("title")}>{t("app.ai_term_title")}</Button>}
       </Field>
       <Field label={t("common.seo_description")} help={<Counter value={seo.description ?? ""} min={120} max={160} />}>
         <TemplateInput multiline value={seo.description ?? ""} placeholder={term.description} onChange={(v) => update({ description: v || undefined })} />
-        {ai.enabled && term.name && <Button size="sm" variant="ghost" loading={busy === "description"} onClick={() => void aiFill("description")}>✨ {t("app.ai_term_description")}</Button>}
+        {ai.enabled && term.name && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={busy === "description"} onClick={() => void aiFill("description")}>{t("app.ai_term_description")}</Button>}
       </Field>
       <Field label={t("app.breadcrumb_title")}><Input value={seo.breadcrumbTitle ?? ""} placeholder={term.name} onChange={(e) => update({ breadcrumbTitle: e.target.value || undefined })} /></Field>
       <Field label={t("app.canonical_url")}><Input value={seo.canonical ?? ""} placeholder="https://" onChange={(e) => update({ canonical: e.target.value || undefined })} /></Field>

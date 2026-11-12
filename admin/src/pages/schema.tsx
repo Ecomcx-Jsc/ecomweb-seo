@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Input, Modal, PageHeader, Select, Textarea, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
+import { AiIcon, Button, Card, Input, Modal, PageHeader, Select, Textarea, notify, useAi, useApi } from "@ecomcx/ecomweb-admin-sdk";
 import { BUSINESS_TYPES, schemaDef } from "../../../frontend/lib/schema-types";
 import type { SchemaTemplate } from "../../../frontend/lib/settings";
 import { SchemaCatalog, SchemaForm, newId } from "../schema-editor";
@@ -75,11 +75,11 @@ export function SchemaPage() {
               <Row label={t("schema.alternate_name")} help={t("schema.abbreviation_or_trading_name")}><Input value={kg.alternateName} onChange={(e) => set("alternateName", e.target.value)} /></Row>
               <Row label={kg.type === "person" ? t("schema.profile_photo") : t("schema.logo")} help={t("schema.at_least_112_112px_transparent")}><ImageField value={kg.logo} onChange={(v) => set("logo", v)} /></Row>
               <Row label={t("common.description")}><Textarea rows={3} value={kg.description} onChange={(e) => set("description", e.target.value)} />
-                {ai.enabled && kg.name && <Button size="sm" variant="ghost" loading={aiBusy} onClick={async () => {
+                {ai.enabled && kg.name && <Button icon={<AiIcon />} size="sm" variant="ghost" loading={aiBusy} onClick={async () => {
                   setAiBusy(true);
                   try { set("description", (await ai.ask("Write a factual 1-2 sentence description (max 300 characters) of this organization or person for schema.org structured data, in the language of the name. Do not invent facts, awards or numbers; keep it generic if little is known.", `${kg.name}\n${boot?.site.title ?? ""}\n${boot?.site.tagline ?? ""}`.trim())).trim()); }
                   catch (e) { notify.error((e as Error).message); } finally { setAiBusy(false); }
-                }}>✨ {t("schema.ai_description")}</Button>}</Row>
+                }}>{t("schema.ai_description")}</Button>}</Row>
               <Row label="URL" help={t("schema.leave_empty_site_address")}><Input value={kg.url} placeholder="https://" onChange={(e) => set("url", e.target.value)} /></Row>
               <Row label={t("schema.email")}><Input type="email" value={kg.email} onChange={(e) => set("email", e.target.value)} /></Row>
               <Row label={t("schema.mobile")}><Input value={kg.phone} placeholder="+84 28 1234 5678" onChange={(e) => set("phone", e.target.value)} /></Row>

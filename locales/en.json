@@ -705,7 +705,7 @@
  "seoBox.ai_keywords": "Suggest keywords with AI",
  "bulk.ai_fill": "Fill with AI",
  "bulk.ai_fill_missing": "AI: fill missing descriptions (up to 10 posts)",
- "bulk.ai_done": "Filled {count} posts — review, then Save",
+ "bulk.ai_done": "AI proposed descriptions for {count} posts — review, then apply",
  "notfound.ai_suggest": "Suggest target with AI",
  "notfound.ai_no_match": "AI found no suitable page — enter one by hand",
  "seoBox.ai_advice": "AI: how to fix",
@@ -971,5 +971,16 @@
  "vars.tags_of_the_post": "Tags of the post",
  "vars.today_s_date": "Today's date",
  "vars.total_pages": "Total pages",
- "vars.value_of_a_custom_field": "Value of a custom field of the post"
+ "vars.value_of_a_custom_field": "Value of a custom field of the post",
+ "dashboard.ai_on": "AI on",
+ "dashboard.ai_on_help": "AI buttons are in the post SEO box, Bulk edit and the audit results",
+ "dashboard.ai_off_site": "Turn on AI for the website",
+ "dashboard.ai_off_plugin": "Turn on AI for SEO",
+ "dashboard.ai_off_limit": "SEO used up its AI this month",
+ "bulk.ai_changeset_title": "AI: fill missing SEO descriptions",
+ "bulk.ai_review_title": "AI proposed SEO descriptions for {count} posts",
+ "bulk.ai_apply": "Apply all",
+ "bulk.ai_reject": "Discard proposal",
+ "bulk.ai_applied": "SEO descriptions applied",
+ "bulk.ai_rejected": "Proposal discarded"
 }
