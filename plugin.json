@@ -4,6 +4,35 @@
   "version": "1.4.0",
   "author": "Ecomcx",
   "description": "Tối ưu tìm kiếm toàn diện: tiêu đề & meta theo mẫu, chấm điểm nội dung theo từ khoá, schema JSON-LD, sitemap (thường, tin tức, video), chuyển hướng, theo dõi 404, breadcrumbs, SEO hình ảnh, IndexNow, Google Search Console, phân tích website và đối thủ.",
+  "ai": {
+    "summary": "Full SEO suite: title/meta templates, per-post SEO box with 0-100 keyword score, JSON-LD schema, sitemaps (news, video), redirects, 404 monitor, breadcrumbs, IndexNow, Search Console, GA4/GTM, llms.txt.",
+    "useWhen": [
+      "the site needs search-engine optimisation (meta titles, descriptions, schema, sitemaps)",
+      "writing or editing posts that should score well for a focus keyword",
+      "redirects after URL changes or tracking 404 errors",
+      "pages need breadcrumbs, a table of contents, an FAQ list, local contact info or an HTML sitemap"
+    ],
+    "avoidWhen": [
+      "another SEO plugin already outputs meta tags and JSON-LD (avoid duplicates)"
+    ],
+    "provides": "shortcodes [ecx_breadcrumbs], [ecx_toc levels title], [ecx_faq], [ecx_contact_info show], [ecx_html_sitemap types limit]; document metadata + robots.txt filters; JSON-LD @graph in body.end; GA4/GTM in head; routes /news-sitemap.xml, /video-sitemap.xml, /llms.txt, /indexnow-key.txt; per-post SEO in extra.ecxSeo; admin SEO menu (dashboard, redirects, 404, analysis, Search Console, settings); AI skill seo-writing",
+    "notes": "Do not hand-write <title>, meta description or JSON-LD in themes or pages when this plugin is on: it outputs them. Themes should not print their own BreadcrumbList schema (the plugin handles breadcrumbs.schema).",
+    "keywords": [
+      "seo",
+      "meta",
+      "schema",
+      "json-ld",
+      "sitemap",
+      "redirect",
+      "404",
+      "breadcrumbs",
+      "search console",
+      "tối ưu tìm kiếm",
+      "từ khoá",
+      "chuyển hướng",
+      "sơ đồ trang"
+    ]
+  },
   "requires": {
     "cms": ">=1.26.3 <2.0.0"
   },
