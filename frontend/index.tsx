@@ -1,4 +1,6 @@
 import { definePlugin, type Block, type DocumentMetadata, type ShortcodeProps, type Site, type SlotProps } from "@ecomcx/ecomweb-theme-sdk";
+import * as themeSdk from "@ecomcx/ecomweb-theme-sdk";
+import { GoogleTags } from "./GoogleTags";
 import { Breadcrumbs, ContactInfo, Faq, HtmlSitemap, Toc } from "./components";
 import { ogLocale, pageSeo, seoSettings } from "./lib/page";
 import { buildGraph } from "./lib/schema";
@@ -109,23 +111,21 @@ async function SchemaGraph({ site, data }: SlotProps) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(graph) }} />;
 }
 
+// GA4 / GTM nạp ở trình duyệt theo Consent API (GoogleTags): HTML giống nhau cho mọi khách → trang cache được.
+// <noscript> (khách tắt JS, không hỏi được) chỉ in khi site mặc định cho phép. Core cũ chưa có Consent API → như trước.
+const consentDefault = (themeSdk as { consentDefault?: (category: string) => Promise<boolean> }).consentDefault ?? (async () => true);
+
 function Analytics({ site }: SlotProps) {
   const a = seoSettings(site)?.analytics;
   const ga = a?.ga4 && /^G-[A-Z0-9]{4,20}$/i.test(a.ga4) ? a.ga4 : null;
   const gtm = a?.gtm && /^GTM-[A-Z0-9]{4,20}$/i.test(a.gtm) ? a.gtm : null;
-  if (!ga && !gtm) return null;
-  return (
-    <>
-      {ga && <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga}`} />}
-      {ga && <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${ga}');` }} />}
-      {gtm && <script dangerouslySetInnerHTML={{ __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtm}');` }} />}
-    </>
-  );
+  return ga || gtm ? <GoogleTags ga={ga} gtm={gtm} /> : null;
 }
 
-function GtmNoScript({ site }: SlotProps) {
+async function GtmNoScript({ site }: SlotProps) {
   const gtm = seoSettings(site)?.analytics?.gtm;
   if (!gtm || !/^GTM-[A-Z0-9]{4,20}$/i.test(gtm)) return null;
+  if (!(await consentDefault("statistics")) && !(await consentDefault("marketing"))) return null;
   return <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${gtm}`} height="0" width="0" style={{ display: "none", visibility: "hidden" }} /></noscript>;
 }
 
