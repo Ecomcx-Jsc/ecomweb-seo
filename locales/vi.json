@@ -982,5 +982,7 @@
  "bulk.ai_apply": "Áp dụng tất cả",
  "bulk.ai_reject": "Bỏ đề xuất",
  "bulk.ai_applied": "Đã áp dụng mô tả SEO",
- "bulk.ai_rejected": "Đã bỏ đề xuất"
+ "bulk.ai_rejected": "Đã bỏ đề xuất",
+ "plugin.name": "Ecomcx SEO",
+ "plugin.description": "Tối ưu tìm kiếm toàn diện: tiêu đề & meta theo mẫu, chấm điểm nội dung theo từ khoá, schema JSON-LD, sitemap (thường, tin tức, video), chuyển hướng, theo dõi 404, breadcrumbs, SEO hình ảnh, IndexNow, Google Search Console, phân tích website và đối thủ."
 }

@@ -982,5 +982,7 @@
  "bulk.ai_apply": "Apply all",
  "bulk.ai_reject": "Discard proposal",
  "bulk.ai_applied": "SEO descriptions applied",
- "bulk.ai_rejected": "Proposal discarded"
+ "bulk.ai_rejected": "Proposal discarded",
+ "plugin.name": "Ecomcx SEO",
+ "plugin.description": "Complete SEO toolkit: title and meta templates, a per-post SEO panel with keyword scoring, JSON-LD schema, XML sitemaps (news, video), redirects, 404 monitoring, breadcrumbs, image SEO, IndexNow, Google Search Console and site and competitor analysis."
 }

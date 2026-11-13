@@ -1,9 +1,9 @@
 {
-  "name": "Ecomcx SEO",
+  "name": "%plugin.name%",
   "slug": "ecomcx-seo",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "author": "Ecomcx",
-  "description": "Tối ưu tìm kiếm toàn diện: tiêu đề & meta theo mẫu, chấm điểm nội dung theo từ khoá, schema JSON-LD, sitemap (thường, tin tức, video), chuyển hướng, theo dõi 404, breadcrumbs, SEO hình ảnh, IndexNow, Google Search Console, phân tích website và đối thủ.",
+  "description": "%plugin.description%",
   "ai": {
     "summary": "Full SEO suite: title/meta templates, per-post SEO box with 0-100 keyword score, JSON-LD schema, sitemaps (news, video), redirects, 404 monitor, breadcrumbs, IndexNow, Search Console, GA4/GTM, llms.txt.",
     "useWhen": [
